@@ -25,4 +25,8 @@ try {
 // Siempre iniciar el servidor API, independientemente del estado de WhatsApp
 await import('./src/config/routes.js');
 
+// Iniciar monitor de salud
+import { startHealthMonitor } from './src/services/health-monitor.service.js';
+startHealthMonitor();
+
 

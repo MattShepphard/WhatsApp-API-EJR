@@ -9,7 +9,8 @@ API REST para verificar si un número de teléfono está registrado en WhatsApp,
 -  Rate limiting (protección contra abuso)
 -  Sistema de colas para peticiones simultáneas
 -  Logging automático de todas las operaciones
--  Reconexión automática si la sesión se desconecta
+-  Solicitud de QR si la sesión se desconecta
+- 💚 **Health Monitor**: Notificaciones automáticas del estado del servicio
 -  QR Code en terminal para autenticación
 -  Validación de entrada y manejo de errores
 
@@ -31,6 +32,7 @@ WhatsApp-API-EJR/
        whatsapp.controller.js   # Controladores de la API
     services/
        whatsapp.service.js      # Lógica de negocio
+       health-monitor.service.js # Monitor de salud automático
     utils/
         logger.js                # Sistema de logging
 ```
@@ -66,6 +68,8 @@ Edita .env con tus valores:
 NAME_CLIENT=CHECK-WS-COBRIX
 API_TOKEN=tu-token-secreto-aqui
 PORT=3000
+SUPPORT_PHONE=593987654321
+HEALTH_CHECK_INTERVAL=3600000
 ```
 
 4. **Iniciar el servidor**
@@ -216,7 +220,34 @@ Solo dígitos: 0987654321
 |----------|-------------|---------|
 | `NAME_CLIENT` | Identificador de sesión de WhatsApp | CHECK-WS-COBRIX |
 | `API_TOKEN` | Token de autenticación para la API | - |
-| `PORT` | Puerto del servidor | 3000 |
+| `PORT` | Puerto del servidor | 3000 || `SUPPORT_PHONE` | Número para notificaciones de salud (formato: 593987654321) | - |
+| `HEALTH_CHECK_INTERVAL` | Intervalo de reportes de salud en milisegundos | 3600000 (1 hora) || `SUPPORT_PHONE` | Número para notificaciones de salud (formato: 593987654321) | - |
+
+### 💚 Health Monitor
+
+El sistema incluye un monitor automático que envía reportes periódicos del estado del servicio.
+
+**Configuración:**
+```env
+SUPPORT_PHONE=593987654321
+HEALTH_CHECK_INTERVAL=3600000  # 1 hora en milisegundos
+```
+
+**Funcionamiento:**
+- Envía primer reporte 1 minuto después de iniciar
+- Luego envía reportes cada hora (o intervalo configurado)
+- Solo envía si WhatsApp está conectado
+- Incluye número del cliente activo
+
+**Mensaje enviado:**
+```
+✅ *Whatsapp Checker:* 
+📱 *Cliente:* 593987654321
+🟢 *Estado:* Conectado
+```
+
+**Para desactivar:**
+No configures `SUPPORT_PHONE` en el archivo `.env`
 
 ### Logs
 
