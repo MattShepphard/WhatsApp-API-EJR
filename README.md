@@ -120,8 +120,12 @@ Authorization: Bearer tu-token-secreto
 **Respuesta exitosa (200):**
 ```json
 {
-  "phoneNumber": "5930987654321@c.us",
-  "isRegistered": true
+  "message": "Verificación completada",
+  "data": {
+    "verification": true,
+    "phoneNumber": "0987654321",
+    "timestamp": "2026-01-12T15:21:49.076Z"
+  }
 }
 ```
 

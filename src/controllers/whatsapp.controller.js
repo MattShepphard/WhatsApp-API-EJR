@@ -34,12 +34,13 @@ export async function checkWhatsAppController(isReady, req, res) {
         console.log(`Verificando número: ${formattedNumber}`);
         const result = await checkWhatsappApi(getClient(), formattedNumber);
         res.json({
-            message: 'Verificación completada',
-            verification: result.isRegistered,
-            phoneNumber: phoneNumber,
-            timestamp: new Date().toISOString()
+            message: 'Verificación completada', 
+            data: {
+                verification: result.isRegistered,
+                phoneNumber: phoneNumber,
+                timestamp: new Date().toISOString()
+            }
         });
-        
 // Verificar si el número está registrado en WhatsApp
         
     } catch (error) {
