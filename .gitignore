@@ -1,0 +1,30 @@
+﻿# Dependencias
+node_modules/
+package-lock.json
+
+# Variables de entorno
+.env
+
+# Logs
+logs/
+*.log
+
+# Sesiones y cache de WhatsApp
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build
+dist/
+build/
