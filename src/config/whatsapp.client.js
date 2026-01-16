@@ -32,24 +32,56 @@ async function destroyExistingClient() {
     }
 }
 
-// Función para esperar a que el cliente esté listo
-
+// ============================================================
+// WRAPPER LIMPIO: Convierte 'ready' en promesa (UNA SOLA VEZ)
+// FIX PARA BUG #5717 y #5685: authenticated se dispara pero ready no
+// ============================================================
 function waitForReady(client, timeoutMs = 60000) {
   return new Promise((resolve, reject) => {
+    let isResolved = false;
+    
     const timeout = setTimeout(() => {
-      reject(new Error("READY_TIMEOUT: El cliente no se conectó a tiempo"));
+      if (!isResolved) {
+        reject(new Error("READY_TIMEOUT: El cliente no se conectó a tiempo"));
+      }
     }, timeoutMs);
 
     // Solo escuchamos UNA vez
     client.once("ready", () => {
-      clearTimeout(timeout);
-      resolve();
+      if (!isResolved) {
+        isResolved = true;
+        clearTimeout(timeout);
+        resolve();
+      }
+    });
+
+    // WORKAROUND: Si authenticated se dispara, dar tiempo y forzar ready
+    client.once("authenticated", () => {
+      setTimeout(async () => {
+        if (!isResolved) {
+          // Verificar si el cliente está realmente listo
+          try {
+            const state = await client.getState();
+            if (state === 'CONNECTED') {
+              console.log("⚠️ WORKAROUND: authenticated disparado pero ready no. Forzando resolución...");
+              isResolved = true;
+              clearTimeout(timeout);
+              resolve();
+            }
+          } catch (err) {
+            console.log("No se pudo verificar estado:", err.message);
+          }
+        }
+      }, 5000); // Esperar 5 segundos después de authenticated
     });
 
     // Si se desconecta antes de ready
     client.once("disconnected", (reason) => {
-      clearTimeout(timeout);
-      reject(new Error(`DISCONNECTED antes de ready: ${reason}`));
+      if (!isResolved) {
+        isResolved = true;
+        clearTimeout(timeout);
+        reject(new Error(`DISCONNECTED antes de ready: ${reason}`));
+      }
     });
   });
 }
@@ -65,7 +97,7 @@ async function initializeClient() {
             clientId: NAME_CLIENT, // Usar el nombre del cliente desde .env
         }),
         puppeteer: {
-            headless: 'new',
+            headless: false,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -92,8 +124,32 @@ async function initializeClient() {
     clientInstance = client;
     isClientReady = false;
 
+    // ============================================================
+    // WORKAROUND: Agregar listener de authenticated antes de inicializar
+    // para el bug #5717 y #5685
+    // ============================================================
+    let readyFired = false;
+    
+    client.on('authenticated', () => {
+        console.log('✅ Autenticado, esperando evento ready...');
+        setTimeout(async () => {
+            if (!readyFired) {
+                try {
+                    const state = await client.getState();
+                    if (state === 'CONNECTED') {
+                        console.log('⚠️ WORKAROUND: Forzando ready después de authenticated');
+                        client.emit('ready'); // Forzar evento ready
+                    }
+                } catch (err) {
+                    console.log('Error verificando estado:', err.message);
+                }
+            }
+        }, 5000);
+    });
+
     // Eventos del cliente
     client.on('ready', () => {
+        readyFired = true;
         isClientReady = true;
         isReconnecting = false;
         console.log("✓ Cliente de WhatsApp listo");
@@ -140,11 +196,21 @@ async function initializeClient() {
     // Intentar inicializar el cliente con manejo de errores
     try {
         console.log("🚀 Inicializando cliente de WhatsApp...");
-        await client.initialize();
         
-        // Esperar a que el cliente esté listo
-        console.log("⏳ Esperando a que el cliente esté listo...");
-        await waitForReady(client);
+        // Crear promesa ANTES de initialize
+        const readyPromise = waitForReady(client);
+        
+        // Dar un tick para asegurar que los listeners estén registrados
+        await new Promise(resolve => setImmediate(resolve));
+        
+        await client.initialize();
+        console.log("Cliente inicializado, esperando evento ready...");
+        
+        // Esperar promesa DESPUÉS
+        await readyPromise;
+        
+        console.log("✅ Cliente listo, esperando estabilización...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error) {
         console.error("❌ Error durante la inicialización:", error.message);
         isClientReady = false;
@@ -154,6 +220,7 @@ async function initializeClient() {
 
 // Inicializar el cliente al cargar el módulo
 await initializeClient();
+
 
 // Función para verificar si el cliente está listo
 function isReady() {

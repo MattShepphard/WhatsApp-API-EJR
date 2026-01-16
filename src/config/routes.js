@@ -10,6 +10,8 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+
+app.set('trust proxy', 1);
 app.use(express.json());
 
 // Rate limiting: 10 peticiones por minuto por IP

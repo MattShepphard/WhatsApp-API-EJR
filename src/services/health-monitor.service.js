@@ -33,7 +33,7 @@ async function sendHealthStatus() {
         } 
         const message = `✅ *Whatsapp Checker:* \n📱 *Cliente:* ${clientNumber}\n🟢 *Estado:* Conectado`;
 
-        await client.sendMessage(formattedPhone, message);
+        await client.sendMessage(formattedPhone, message, { sendSeen: false });
         console.log(`✅ Health check enviado a ${SUPPORT_PHONE} - Cliente: ${clientNumber}`);
 
     } catch (error) {
