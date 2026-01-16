@@ -97,7 +97,7 @@ async function initializeClient() {
             clientId: NAME_CLIENT, // Usar el nombre del cliente desde .env
         }),
         puppeteer: {
-            headless: false,
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
