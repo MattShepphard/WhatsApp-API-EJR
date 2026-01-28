@@ -2,6 +2,7 @@ FROM node:18-slim
 
 # Instalar dependencias necesarias para Chromium
 RUN apt-get update && apt-get install -y \
+  git \
   chromium \
   ca-certificates \
   fonts-liberation \
