@@ -1,11 +1,11 @@
 import express from 'express';
 import ms from 'ms';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
+
 import { isReady } from './whatsapp.client.js';
 import { checkWhatsAppController } from '../controllers/whatsapp.controller.js';
 
-dotenv.config();
+
 
 const PORT = process.env.PORT || 3000;
 
