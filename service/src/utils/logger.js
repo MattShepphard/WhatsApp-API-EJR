@@ -53,22 +53,22 @@ const originalConsoleInfo = console.info;
 
 console.log = (...args) => {
     logger.info(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' '));
-    originalConsoleLog.apply(console, args);
+    // originalConsoleLog.apply(console, args);
 };
 
 console.error = (...args) => {
     logger.error(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' '));
-    originalConsoleError.apply(console, args);
+    // originalConsoleError.apply(console, args);
 };
 
 console.warn = (...args) => {
     logger.warn(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' '));
-    originalConsoleWarn.apply(console, args);
+    // originalConsoleWarn.apply(console, args);
 };
 
 console.info = (...args) => {
     logger.info(args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' '));
-    originalConsoleInfo.apply(console, args);
+    // originalConsoleInfo.apply(console, args);
 };
 
 // Exportar el logger por si se necesita usar directamente
