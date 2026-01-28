@@ -1,6 +1,6 @@
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
-import dotenv from 'dotenv';
+
 import qrcode from 'qrcode-terminal';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -8,7 +8,7 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 
 const NAME_CLIENT = process.env.NAME_CLIENT || 'default';
 
@@ -32,10 +32,6 @@ async function destroyExistingClient() {
     }
 }
 
-// ============================================================
-// WRAPPER LIMPIO: Convierte 'ready' en promesa (UNA SOLA VEZ)
-// FIX PARA BUG #5717 y #5685: authenticated se dispara pero ready no
-// ============================================================
 function waitForReady(client, timeoutMs = 60000) {
   return new Promise((resolve, reject) => {
     let isResolved = false;
@@ -55,25 +51,7 @@ function waitForReady(client, timeoutMs = 60000) {
       }
     });
 
-    // WORKAROUND: Si authenticated se dispara, dar tiempo y forzar ready
-    client.once("authenticated", () => {
-      setTimeout(async () => {
-        if (!isResolved) {
-          // Verificar si el cliente está realmente listo
-          try {
-            const state = await client.getState();
-            if (state === 'CONNECTED') {
-              console.log("⚠️ WORKAROUND: authenticated disparado pero ready no. Forzando resolución...");
-              isResolved = true;
-              clearTimeout(timeout);
-              resolve();
-            }
-          } catch (err) {
-            console.log("No se pudo verificar estado:", err.message);
-          }
-        }
-      }, 5000); // Esperar 5 segundos después de authenticated
-    });
+
 
     // Si se desconecta antes de ready
     client.once("disconnected", (reason) => {
@@ -124,32 +102,11 @@ async function initializeClient() {
     clientInstance = client;
     isClientReady = false;
 
-    // ============================================================
-    // WORKAROUND: Agregar listener de authenticated antes de inicializar
-    // para el bug #5717 y #5685
-    // ============================================================
-    let readyFired = false;
-    
-    client.on('authenticated', () => {
-        console.log('✅ Autenticado, esperando evento ready...');
-        setTimeout(async () => {
-            if (!readyFired) {
-                try {
-                    const state = await client.getState();
-                    if (state === 'CONNECTED') {
-                        console.log('⚠️ WORKAROUND: Forzando ready después de authenticated');
-                        client.emit('ready'); // Forzar evento ready
-                    }
-                } catch (err) {
-                    console.log('Error verificando estado:', err.message);
-                }
-            }
-        }, 5000);
-    });
+
 
     // Eventos del cliente
     client.on('ready', () => {
-        readyFired = true;
+
         isClientReady = true;
         isReconnecting = false;
         console.log("✓ Cliente de WhatsApp listo");
