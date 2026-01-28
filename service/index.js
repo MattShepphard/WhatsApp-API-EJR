@@ -1,4 +1,6 @@
-// Inicializar logger primero
+import dotenv from 'dotenv';
+dotenv.config();
+
 import './src/utils/logger.js';
 
 // Manejo de errores no capturados
@@ -12,7 +14,7 @@ process.on('uncaughtException', (error) => {
     // El servidor continúa funcionando
 });
 
-// Inicializar cliente de WhatsApp primero
+
 try {
     await import('./src/config/whatsapp.client.js');
     console.log('✅ Cliente de WhatsApp inicializado correctamente');
@@ -22,7 +24,6 @@ try {
     console.error('💡 Sugerencia: Intenta eliminar la carpeta .wwebjs_auth y reiniciar');
 }
 
-// Siempre iniciar el servidor API, independientemente del estado de WhatsApp
 await import('./src/config/routes.js');
 
 // Iniciar monitor de salud
