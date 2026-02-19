@@ -75,25 +75,18 @@ async function initializeClient() {
             clientId: NAME_CLIENT, // Usar el nombre del cliente desde .env
         }),
         puppeteer: {
-            headless: true,
+            headless: 'new',
             args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-background-timer-throttling',
-                '--disable-gpu',
-                '--disable-software-rasterizer',
-                '--disable-extensions',
-                '--disable-background-networking',
-                '--disable-sync',
-                '--disable-translate',
-                '--disable-default-apps',
-                '--mute-audio',
-                '--no-first-run',
-                '--no-zygote',
-                '--disable-features=TranslateUI',
-                '--disable-features=MediaRouter',
-                '--disable-accelerated-2d-canvas'
+            '--no-sandbox',
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--no-zygote',
+            '--disable-gpu',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--no-first-run',
+            '--mute-audio'
             ]
         }
     });
